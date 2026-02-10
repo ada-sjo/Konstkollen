@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Konstutlottning 2026</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <p class="brand-eyebrow">Konstkollen</p>
+          <h1>Konstutlottning 2026</h1>
+        </div>
+        <div class="actions">
+          <div class="actions-left">
+            <label class="upload-inline" for="pdfInput">
+              Ladda upp PDF
+              <input id="pdfInput" type="file" accept="application/pdf" />
+            </label>
+            <button id="resetApp" class="reset-app" type="button">
+              Nollställ app
+            </button>
+          </div>
+          <div class="actions-right">
+            <div class="search">
+              <svg
+                class="search-icon"
+                viewBox="0 0 24 24"
+                role="img"
+                aria-hidden="true"
+              >
+                <path
+                  d="M15.5 14h-.79l-.28-.27a6 6 0 1 0-.71.71l.27.28v.79L20 20.5 21.5 19 15.5 14Zm-5.5 0a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"
+                />
+              </svg>
+              <input
+                id="searchInput"
+                type="search"
+                placeholder="Sök konstnär eller nr..."
+                autocomplete="off"
+              />
+            </div>
+            <button id="rankToggle" class="rank-toggle" type="button">
+              Rangordna
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="tabs-row">
+        <nav class="tabs" aria-label="Filter">
+          <button class="tab active" type="button" data-filter="all">
+            Alla <span class="tab-count" data-count="all">0</span>
+          </button>
+          <button class="tab" type="button" data-filter="favorite">
+            Favoriter <span class="tab-count" data-count="favorite">0</span>
+          </button>
+          <button class="tab" type="button" data-filter="maybe">
+            Kanske <span class="tab-count" data-count="maybe">0</span>
+          </button>
+          <button class="tab" type="button" data-filter="nope">
+            Bortvalda <span class="tab-count" data-count="nope">0</span>
+          </button>
+          <button class="tab" type="button" data-filter="unmarked">
+            Omarkerade <span class="tab-count" data-count="unmarked">0</span>
+          </button>
+          <button class="tab" type="button" data-filter="removed">
+            Dragna <span class="tab-count" data-count="removed">0</span>
+          </button>
+        </nav>
+        <div class="sort-controls">
+          <div class="sorter">
+            <label for="sortSelect">Sortera</label>
+            <select id="sortSelect">
+              <option value="number">Verknummer</option>
+              <option value="rank">Rangordning</option>
+            </select>
+          </div>
+          <div class="view-toggles" role="group" aria-label="Visa som">
+            <button class="view-toggle active" type="button" data-view="grid" aria-label="Rutnät">
+              <svg class="view-icon" viewBox="0 0 16 16" aria-hidden="true">
+                <rect x="1" y="1" width="5" height="5" rx="1"></rect>
+                <rect x="10" y="1" width="5" height="5" rx="1"></rect>
+                <rect x="1" y="10" width="5" height="5" rx="1"></rect>
+                <rect x="10" y="10" width="5" height="5" rx="1"></rect>
+              </svg>
+            </button>
+            <button class="view-toggle" type="button" data-view="grid-compact" aria-label="Rutnät (små kort)">
+              <svg class="view-icon" viewBox="0 0 20 16" aria-hidden="true">
+                <rect x="1" y="1" width="4" height="4" rx="1"></rect>
+                <rect x="8" y="1" width="4" height="4" rx="1"></rect>
+                <rect x="15" y="1" width="4" height="4" rx="1"></rect>
+                <rect x="1" y="11" width="4" height="4" rx="1"></rect>
+                <rect x="8" y="11" width="4" height="4" rx="1"></rect>
+                <rect x="15" y="11" width="4" height="4" rx="1"></rect>
+              </svg>
+            </button>
+            <button class="view-toggle" type="button" data-view="list" aria-label="Lista">
+              <svg class="view-icon" viewBox="0 0 16 12" aria-hidden="true">
+                <rect x="0" y="0" width="16" height="2" rx="1"></rect>
+                <rect x="0" y="5" width="16" height="2" rx="1"></rect>
+                <rect x="0" y="10" width="16" height="2" rx="1"></rect>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <section id="grid" class="grid" aria-live="polite"></section>
+      <section id="rankingPanel" class="ranking-panel" hidden>
+        <div class="ranking-head">Dra och släpp för att rangordna.</div>
+        <ul id="rankingList" class="ranking-list"></ul>
+      </section>
+      <div id="emptyState" class="empty-state" hidden>
+        Inga verk matchar ditt filter.
+      </div>
+    </main>
+
+    <footer class="bottombar">
+      <div class="bottombar-inner">
+        <div class="status-counts">
+          <div class="status-chip favorite">
+            <span id="count-favorite">0</span> Favoriter
+          </div>
+          <div class="status-chip maybe">
+            <span id="count-maybe">0</span> Kanske
+          </div>
+          <div class="status-chip nope">
+            <span id="count-nope">0</span> Bortvalda
+          </div>
+        </div>
+        <div class="footer-actions">
+          <button id="resetMarks" class="reset-marks" type="button">
+            Nollställ markeringar
+          </button>
+          <button id="resetRank" class="reset-rank" type="button">
+            Nollställ rangordning
+          </button>
+        </div>
+      </div>
+    </footer>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
