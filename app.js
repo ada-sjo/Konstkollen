@@ -872,15 +872,110 @@ function renderRankingList() {
 
     meta.append(artist, number);
 
+    const controls = document.createElement("div");
+    controls.className = "ranking-controls";
+
+    const moveUpButton = document.createElement("button");
+    moveUpButton.type = "button";
+    moveUpButton.className = "ranking-control-button";
+    moveUpButton.textContent = "↑";
+    moveUpButton.draggable = false;
+    moveUpButton.setAttribute("aria-label", `Flytta upp verk ${artwork.number}`);
+    moveUpButton.addEventListener("click", () => moveRankingItem(index, -1));
+
+    const moveDownButton = document.createElement("button");
+    moveDownButton.type = "button";
+    moveDownButton.className = "ranking-control-button";
+    moveDownButton.textContent = "↓";
+    moveDownButton.draggable = false;
+    moveDownButton.setAttribute("aria-label", `Flytta ned verk ${artwork.number}`);
+    moveDownButton.addEventListener("click", () => moveRankingItem(index, 1));
+
+    const rankInput = document.createElement("input");
+    rankInput.type = "number";
+    rankInput.className = "ranking-input";
+    rankInput.draggable = false;
+    rankInput.min = "1";
+    rankInput.max = String(indices.length);
+    rankInput.value = String(position + 1);
+    rankInput.setAttribute("aria-label", `Ange placering för verk ${artwork.number}`);
+
+    const moveToInputRank = () => moveRankingItemToPosition(index, rankInput.value);
+    rankInput.addEventListener("change", moveToInputRank);
+    rankInput.addEventListener("blur", moveToInputRank);
+    rankInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        moveToInputRank();
+        rankInput.blur();
+      }
+    });
+
+    controls.append(moveUpButton, moveDownButton, rankInput);
+
     const handle = document.createElement("div");
     handle.className = "ranking-handle";
     handle.textContent = "⋮⋮";
 
-    item.append(rank, thumb, meta, handle);
+    item.append(rank, thumb, meta, controls, handle);
     rankingList.append(item);
   });
 
   updateRankingNumbers();
+}
+
+function moveRankingItem(index, direction) {
+  if (!rankingList) return;
+
+  const item = rankingList.querySelector(`.ranking-item[data-index="${index}"]`);
+  if (!item) return;
+
+  if (direction < 0) {
+    const previous = item.previousElementSibling;
+    if (!previous) return;
+    rankingList.insertBefore(item, previous);
+  } else if (direction > 0) {
+    const next = item.nextElementSibling;
+    if (!next) return;
+    rankingList.insertBefore(next, item);
+  }
+
+  updateRankingNumbers();
+  updateRanksFromList();
+}
+
+function moveRankingItemToPosition(index, desiredPosition) {
+  if (!rankingList) return;
+
+  const items = Array.from(rankingList.querySelectorAll(".ranking-item"));
+  const item = rankingList.querySelector(`.ranking-item[data-index="${index}"]`);
+  if (!item || !items.length) return;
+
+  const parsed = Number.parseInt(desiredPosition, 10);
+  if (Number.isNaN(parsed)) {
+    updateRankingNumbers();
+    return;
+  }
+
+  const clampedPosition = Math.min(items.length, Math.max(1, parsed));
+  const targetIndex = clampedPosition - 1;
+  const currentIndex = items.indexOf(item);
+
+  if (currentIndex === targetIndex) {
+    updateRankingNumbers();
+    return;
+  }
+
+  const targetItem = items[targetIndex];
+  if (!targetItem) return;
+
+  if (targetIndex < currentIndex) {
+    rankingList.insertBefore(item, targetItem);
+  } else {
+    rankingList.insertBefore(item, targetItem.nextElementSibling);
+  }
+
+  updateRankingNumbers();
+  updateRanksFromList();
 }
 
 function updateRanksFromList() {
@@ -917,6 +1012,16 @@ function updateRankingNumbers() {
     if (label) {
       label.textContent = String(position + 1);
     }
+
+    const input = item.querySelector(".ranking-input");
+    if (input) {
+      input.value = String(position + 1);
+      input.max = String(items.length);
+    }
+
+    const [upButton, downButton] = item.querySelectorAll(".ranking-control-button");
+    if (upButton) upButton.disabled = position === 0;
+    if (downButton) downButton.disabled = position === items.length - 1;
   });
 }
 
@@ -950,11 +1055,15 @@ function getDragAfterElement(container, y) {
 }
 
 function handleAutoScroll(clientY) {
-  const threshold = 80;
+  if (!rankingList) return;
+
   const speed = 12;
-  if (clientY < threshold) {
+  const rect = rankingList.getBoundingClientRect();
+  const threshold = Math.min(80, rect.height / 3);
+
+  if (clientY < rect.top + threshold) {
     window.scrollBy({ top: -speed });
-  } else if (clientY > window.innerHeight - threshold) {
+  } else if (clientY > rect.bottom - threshold) {
     window.scrollBy({ top: speed });
   }
 }
