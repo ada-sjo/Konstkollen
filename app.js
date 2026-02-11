@@ -950,11 +950,15 @@ function getDragAfterElement(container, y) {
 }
 
 function handleAutoScroll(clientY) {
-  const threshold = 80;
+  if (!rankingList) return;
+
   const speed = 12;
-  if (clientY < threshold) {
+  const rect = rankingList.getBoundingClientRect();
+  const threshold = Math.min(80, rect.height / 3);
+
+  if (clientY < rect.top + threshold) {
     window.scrollBy({ top: -speed });
-  } else if (clientY > window.innerHeight - threshold) {
+  } else if (clientY > rect.bottom - threshold) {
     window.scrollBy({ top: speed });
   }
 }
